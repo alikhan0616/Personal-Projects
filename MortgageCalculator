@@ -1,0 +1,118 @@
+public class Main {
+
+    public static void main(String[] args) {
+        int principle = (int) Console.readNumber("Principle: " , 1000 , 1_000_000);
+        float anuInterest = (float) Console.readNumber("Annual Interest: " , 0 , 30);
+        byte year = (byte) Console.readNumber("Period (in years): " , 1 , 30);
+
+        var calculate = new MortageCalculator(anuInterest , principle , year);
+        var report = new MortageReport(calculate);
+        report.printCalcMortgage();
+        report.printCalcPayments();
+    }
+
+}
+public class MortageCalculator {
+
+    private final static int percent = 100;
+    private final static byte months = 12;
+    private float anuInterest;
+    private int principle;
+    private byte year;
+
+    MortageCalculator(float anuInterest, int principle, byte year) {
+        this.anuInterest = anuInterest;
+        this.principle = principle;
+        this.year = year;
+    }
+
+    public double calculateLoan(short numOfPayments) {
+
+        double loan = 0;
+        float monInterest = getMonInterest();
+        int inMonths = getInMonths();
+        loan = principle
+                * ((Math.pow(1 + monInterest, inMonths)) - (Math.pow(1 + monInterest, numOfPayments)))
+                / (Math.pow(1 + monInterest, inMonths) - 1);
+
+        return loan;
+    }
+
+    public double[] getPayments() {
+        double[] payments = new double[getInMonths()];
+        for (short numOfPayments = 1; numOfPayments <= payments.length; numOfPayments++)
+            payments[numOfPayments - 1] = calculateLoan(numOfPayments);
+            return payments;
+    }
+    public double calculateMortgage() {
+
+        float monInterest = getMonInterest();
+        int inMonths = getInMonths();
+
+        double Mortgage;
+        Mortgage = principle
+                * (monInterest * Math.pow(1 + monInterest, inMonths))
+                / (Math.pow(1 + monInterest, inMonths) - 1);
+
+        return Mortgage;
+    }
+
+    private float getMonInterest() {
+        return anuInterest / percent / months;
+    }
+
+    private int getInMonths() {
+        return year * months;
+    }
+}
+import java.text.NumberFormat;
+
+public class MortageReport {
+
+    private final NumberFormat currency;
+    private MortageCalculator calculator;
+
+    public MortageReport(MortageCalculator calculator){
+        this.calculator = calculator;
+        currency = NumberFormat.getCurrencyInstance();
+    }
+    public void printCalcMortgage() {
+        double mortgage = calculator.calculateMortgage();
+        String formattedMortgage = currency.format(mortgage);
+        System.out.println();
+        System.out.println("Mortgage");
+        System.out.println("--------");
+        System.out.println("Mortgage is: " + formattedMortgage);
+    }
+
+    public void printCalcPayments() {
+        System.out.println();
+        System.out.println("Payment Schedule");
+        System.out.println("----------------");
+        for(double payment: calculator.getPayments())
+            System.out.println(currency.format(payment));
+    }
+}
+import java.util.Scanner;
+
+public class Console {
+    private static Scanner input = new Scanner(System.in);
+
+    public static double readNumber(String promt){
+        System.out.println(promt);
+        return input.nextDouble();
+    }
+    public static double readNumber(String promt, double min, double max) {
+        Double value;
+        while (true) {
+            System.out.println(promt);
+            value = input.nextDouble();
+            if (value >= min && value <= max)
+                break;
+
+            System.out.println("Write a number between " + max + " and " + min);
+
+        }
+        return value;
+    }
+}
